@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev Kaushal — WordPress & Web Operations Command Center</title>
+  <meta name="description" content="Personal interactive operating console of Dev Kaushal — WordPress & Web Operations Specialist based in Gurugram (Delhi NCR). High-performance codeless builds, hPanel disaster recovery, and operational site maintenance.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-void: #04070b;
+      --bg-base: #070c12;
+      --bg-surface: #0c131d;
+      --bg-surface-elevated: #121c2a;
+      --bg-card: rgba(13, 21, 32, 0.75);
+      --border-subtle: rgba(45, 66, 92, 0.45);
+      --border-focus: rgba(0, 240, 255, 0.5);
+      --border-glow: #00f0ff;
+      --text-main: #f3f7fa;
+      --text-muted: #94a6be;
+      --text-dim: #546884;
+      --accent-cyan: #00f0ff;
+      --accent-green: #00ff88;
+      --accent-amber: #ffb703;
+      --accent-crimson: #ff3366;
+      --accent-purple: #a855f7;
+      --glow-cyan: 0 0 25px rgba(0, 240, 255, 0.28);
+      --glow-green: 0 0 25px rgba(0, 255, 136, 0.28);
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-display: 'Space Grotesk', sans-serif;
+      --cursor-size: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-void);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+    }
+
+    body {
+      background-color: var(--bg-void);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(0, 255, 136, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 0% 50%, rgba(168, 85, 247, 0.04) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Subtle Scanline Overlay */
+    body::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
+      background-size: 100% 4px;
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* Ambient Cursor Glow */
+    #cursor-glow {
+      position: fixed;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-void);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-surface-elevated);
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-cyan);
+    }
+
+    /* Telemetry HUD Topbar */
+    .telemetry-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      background: rgba(4, 7, 11, 0.88);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 9px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      letter-spacing: 0.05em;
+    }
+
+    .telemetry-left, .telemetry-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .telemetry-tag {
+      color: var(--text-dim);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 999px;
+      color: var(--accent-green);
+      font-weight: 600;
+      font-size: 0.72rem;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-green);
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* Navigation */
+    .nav-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 16px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .brand-mark {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-main);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-mark .bracket {
+      color: var(--text-dim);
+    }
+
+    .brand-mark .accent-dot {
+      color: var(--accent-cyan);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 6px;
+      list-style: none;
+    }
+
+    .nav-btn {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-btn .key-hint {
+      color: var(--text-dim);
+      font-size: 0.68rem;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      color: var(--accent-cyan);
+      background: rgba(0, 240, 255, 0.06);
+      border-color: var(--border-focus);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .main-wrapper {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 28px 80px 28px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Hero Command Console */
+    .hero-console {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 48px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+
+    .hero-console::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-cyan), var(--accent-green), transparent);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 360px;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .hero-badge-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent-cyan);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: 3.1rem;
+      font-weight: 700;
+      line-height: 1.12;
+      margin-bottom: 22px;
+      letter-spacing: -0.025em;
+    }
+
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, #ffffff 20%, var(--accent-cyan) 85%, var(--accent-green) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtext {
+      font-size: 1.08rem;
+      color: var(--text-muted);
+      max-width: 630px;
+      margin-bottom: 34px;
+      line-height: 1.75;
+    }
+
+    /* Honest Metric Ticker */
+    .metric-ticker {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 34px;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 18px 0;
+    }
+
+    .ticker-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ticker-val {
+      font-family: var(--font-mono);
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .ticker-label {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 2px;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      background: var(--accent-cyan);
+      color: var(--bg-void);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.86rem;
+      padding: 13px 26px;
+      border-radius: 7px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-action:hover {
+      box-shadow: var(--glow-cyan);
+      transform: translateY(-2px);
+      background: #38f5ff;
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 0.86rem;
+      padding: 13px 22px;
+      border-radius: 7px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: var(--text-muted);
+      transform: translateY(-2px);
+    }
+
+    /* Visual Operator Card (with Micro-Interactions) */
+    .operator-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+      transition: border-color 0.3s;
+    }
+
+    .operator-card:hover {
+      border-color: var(--border-focus);
+    }
+
+    .operator-photo {
+      width: 100%;
+      height: 410px;
+      object-fit: cover;
+      object-position: center 20%;
+      display: block;
+      filter: contrast(1.04) brightness(0.96);
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .operator-card:hover .operator-photo {
+      transform: scale(1.035);
+    }
+
+    .operator-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(0deg, var(--bg-surface) 0%, rgba(12, 19, 29, 0.94) 70%, transparent 100%);
+      padding: 22px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .operator-name {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .operator-role {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--accent-green);
+      margin-top: 3px;
+    }
+
+    /* Interactive Section Header */
+    .section-wrap {
+      margin-bottom: 56px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 26px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 14px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--accent-cyan);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    /* Live Interactive Terminal: hPanel Disaster Drill */
+    .terminal-container {
+      background: #060a0f;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      overflow: hidden;
+      font-family: var(--font-mono);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      transition: border-color 0.3s;
+    }
+
+    .terminal-container:hover {
+      border-color: var(--border-focus);
+    }
+
+    .terminal-bar {
+      background: #0c1219;
+      padding: 11px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .window-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .window-dot.close { background: #ff5f56; }
+    .window-dot.min { background: #ffbd2e; }
+    .window-dot.max { background: #27c93f; }
+
+    .terminal-title {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .terminal-body {
+      padding: 26px;
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 26px;
+    }
+
+    .file-tree-pane {
+      background: #030508;
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 18px;
+    }
+
+    .tree-title {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .file-items-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 13px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      border-radius: 5px;
+      font-size: 0.81rem;
+      transition: all 0.2s;
+    }
+
+    .file-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .file-row.faulty-state {
+      border-color: rgba(255, 51, 102, 0.5);
+      background: rgba(255, 51, 102, 0.08);
+      animation: alertPulse 1.5s infinite;
+    }
+
+    @keyframes alertPulse {
+      0%, 100% { border-color: rgba(255, 51, 102, 0.5); }
+      50% { border-color: rgba(255, 51, 102, 0.8); }
+    }
+
+    .btn-purge {
+      background: rgba(255, 51, 102, 0.16);
+      color: var(--accent-crimson);
+      border: 1px solid rgba(255, 51, 102, 0.35);
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-purge:hover {
+      background: var(--accent-crimson);
+      color: white;
+      box-shadow: 0 0 12px rgba(255, 51, 102, 0.4);
+    }
+
+    /* Live Probe Viewport */
+    .probe-pane {
+      background: #030508;
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .probe-screen {
+      border: 1px solid #1a283a;
+      border-radius: 6px;
+      padding: 20px;
+      background: #020305;
+      min-height: 155px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      transition: all 0.35s ease;
+    }
+
+    .probe-screen.state-crashed {
+      border-color: var(--accent-crimson);
+      color: var(--accent-crimson);
+      background: rgba(255, 51, 102, 0.03);
+    }
+
+    .probe-screen.state-healthy {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      background: rgba(0, 255, 136, 0.03);
+    }
+
+    .probe-code {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .probe-message {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      max-width: 280px;
+    }
+
+    /* Interactive Live Code Injector Demo */
+    .code-demo-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      margin-bottom: 56px;
+    }
+
+    .code-pane {
+      padding: 28px;
+      border-right: 1px solid var(--border-subtle);
+      background: #06090e;
+      font-family: var(--font-mono);
+    }
+
+    .preview-pane {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #090e15;
+    }
+
+    .code-snippet-box {
+      background: #020305;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 16px;
+      font-size: 0.82rem;
+      color: #9cdcfe;
+      line-height: 1.5;
+      margin-top: 14px;
+    }
+
+    .code-snippet-box span.comment { color: #6a9955; }
+    .code-snippet-box span.prop { color: #4fc1ff; }
+    .code-snippet-box span.val { color: #ce9178; }
+
+    /* Missions / Verified Project Cards */
+    .missions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 26px;
+      margin-bottom: 56px;
+    }
+
+    .mission-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 30px;
+      position: relative;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(12px);
+    }
+
+    .mission-card:hover {
+      border-color: var(--border-focus);
+      transform: translateY(-5px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+    }
+
+    .mission-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+    }
+
+    .badge-mission {
+      padding: 3px 9px;
+      border-radius: 4px;
+      background: rgba(0, 240, 255, 0.08);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      font-weight: 600;
+    }
+
+    .mission-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-main);
+    }
+
+    .mission-text {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+      line-height: 1.65;
+    }
+
+    .tag-cluster {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 22px;
+    }
+
+    .tag-chip {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    .integrity-seal {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Speed Architecture Gauge */
+    .speed-dashboard {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 36px;
+      margin-bottom: 56px;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 40px;
+      align-items: center;
+      backdrop-filter: blur(12px);
+    }
+
+    .gauge-wrapper {
+      position: relative;
+      width: 190px;
+      height: 190px;
+      margin: 0 auto;
+      border-radius: 50%;
+      border: 11px solid #131d2b;
+      border-top-color: var(--accent-green);
+      border-right-color: var(--accent-green);
+      border-bottom-color: var(--accent-green);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: var(--glow-green);
+      animation: rotateGlow 6s infinite linear;
+    }
+
+    @keyframes rotateGlow {
+      0%, 100% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.25); }
+      50% { box-shadow: 0 0 35px rgba(0, 255, 136, 0.45); }
+    }
+
+    .gauge-digits {
+      font-family: var(--font-mono);
+      font-size: 3.2rem;
+      font-weight: 800;
+      color: var(--accent-green);
+      line-height: 1;
+    }
+
+    .gauge-unit {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .metric-triad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .triad-card {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 16px;
+      border-radius: 7px;
+    }
+
+    .triad-name {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .triad-val {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 5px;
+    }
+
+    /* Verified Credentials Registry */
+    .credentials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-bottom: 56px;
+    }
+
+    .cred-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      padding: 22px;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .cred-item:hover {
+      border-color: rgba(0, 255, 136, 0.45);
+      background: rgba(0, 255, 136, 0.02);
+      transform: translateY(-2px);
+    }
+
+    .cred-issuer {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--accent-green);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .cred-name {
+      font-weight: 700;
+      font-size: 0.98rem;
+      margin-bottom: 10px;
+    }
+
+    .cred-verified {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Transmission Hub / Contact */
+    .transmission-hub {
+      background: linear-gradient(180deg, var(--bg-card) 0%, rgba(12, 19, 29, 0.96) 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 56px 36px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .hub-title {
+      font-family: var(--font-display);
+      font-size: 2.35rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .hub-desc {
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto 36px auto;
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .hub-links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 34px 24px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-dim);
+    }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .operator-card {
+        max-width: 360px;
+        margin: 0 auto;
+      }
+      .terminal-body {
+        grid-template-columns: 1fr;
+      }
+      .code-demo-container {
+        grid-template-columns: 1fr;
+      }
+      .speed-dashboard {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .metric-triad {
+        grid-template-columns: 1fr;
+      }
+      .hero-title {
+        font-size: 2.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glow -->
+  <div id="cursor-glow"></div>
+
+  <!-- Operational Telemetry Bar -->
+  <div class="telemetry-bar">
+    <div class="telemetry-left">
+      <div class="status-badge">
+        <div class="pulse-dot"></div>
+        <span>OPERATIONAL · READY FOR HIRE</span>
+      </div>
+      <span class="telemetry-tag">GURUGRAM, HARYANA (DELHI NCR)</span>
+    </div>
+    <div class="telemetry-right">
+      <span style="color: var(--accent-cyan);">WORDPRESS CORE 6.x</span>
+      <span style="color: var(--text-dim);">//</span>
+      <span style="color: var(--text-muted);" id="utc-clock">00:00:00 UTC</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="nav-container">
+      <a href="#" class="brand-mark">
+        <span class="bracket">[</span>DEV<span class="accent-dot">.</span>KAUSHAL<span class="bracket">]</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#missions" class="nav-btn">Missions</a></li>
+          <li><a href="#simulator" class="nav-btn">hPanel Drill</a></li>
+          <li><a href="#interactive-css" class="nav-btn">CSS Engine</a></li>
+          <li><a href="#performance" class="nav-btn">Speed Gauge</a></li>
+          <li><a href="#credentials" class="nav-btn">Credentials</a></li>
+          <li><a href="#transmission" class="nav-btn">HQ Direct</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+
+    <!-- HERO CONSOLE -->
+    <section class="hero-console">
+      <div class="hero-grid">
+        <div class="hero-lead">
+          <div class="hero-badge-tag">
+            <span>[OPERATING CONSOLE]</span>
+            <span>·</span>
+            <span>WORDPRESS & WEB OPERATIONS SPECIALIST</span>
+          </div>
+          <h1 class="hero-title">
+            RELIABLE CODELESS BUILDS.<br>
+            <span class="gradient-text">OPERATIONAL UPTIME.</span>
+          </h1>
+          <p class="hero-subtext">
+            Practical WordPress & Web Operations Specialist based in Gurugram. 
+            I build responsive, high-converting property and business sites on Elementor from a blank canvas, 
+            tune site speed using LiteSpeed Cache, and perform emergency file recoveries when updates break production.
+          </p>
+
+          <div class="metric-ticker">
+            <div class="ticker-item">
+              <span class="ticker-val">3+</span>
+              <span class="ticker-label">Real Estate Builds</span>
+            </div>
+            <div class="ticker-item">
+              <span class="ticker-val">100%</span>
+              <span class="ticker-label">Blank Canvas Elementor</span>
+            </div>
+            <div class="ticker-item">
+              <span class="ticker-val">hPanel</span>
+              <span class="ticker-label">Crash Recovery Drills</span>
+            </div>
+          </div>
+
+          <div class="hero-cta-group">
+            <a href="https://wa.me/918923162439?text=Hi%20Dev,%20saw%20your%20Command%20Center%20console" target="_blank" class="btn-action">
+              <svg width="17" height="17" fill="currentColor" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.04 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg>
+              Direct WhatsApp (+91 8923162439)
+            </a>
+            <a href="/cdn-cgi/l/email-protection#086c6d7e63697d7b60696430313a3b486f65696164266b6765" class="btn-ghost">
+              Official Email
+            </a>
+            <a href="https://github.com/devkaushall" target="_blank" class="btn-ghost">
+              GitHub (devkaushall)
+            </a>
+          </div>
+        </div>
+
+        <div class="operator-card">
+          <img src="assets/its-me-dev-full.png" alt="Dev Kaushal" class="operator-photo">
+          <div class="operator-overlay">
+            <div class="operator-name">
+              <span>Dev Kaushal</span>
+              <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-cyan);">SYS.OP</span>
+            </div>
+            <div class="operator-role">WORDPRESS & WEB OPERATIONS // GURUGRAM</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE SECTION 1: LIVE HPANEL DISASTER RESCUE SIMULATOR -->
+    <section class="section-wrap" id="simulator">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">[INTERACTIVE DRILL // AUTHENTIC WORKFLOW]</div>
+          <h2 class="section-title">Hostinger hPanel Disaster Recovery</h2>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-dim);">
+          DRILL: MANUAL WP EMERGENCY REPAIR
+        </div>
+      </div>
+
+      <p style="color: var(--text-muted); margin-bottom: 22px; font-size: 0.95rem; max-width: 800px;">
+        When building AI-generated custom plugins or pushing untested updates, WordPress frequently hits a critical PHP fatal crash. 
+        Rather than waiting or panicking, here is the exact manual routine I perform in the <strong>hPanel File Manager</strong> to restore uptime:
+      </p>
+
+      <div class="terminal-container">
+        <div class="terminal-bar">
+          <div class="window-dots">
+            <div class="window-dot close"></div>
+            <div class="window-dot min"></div>
+            <div class="window-dot max"></div>
+          </div>
+          <div class="terminal-title">hPanel File Manager — /public_html/wp-content/plugins/</div>
+          <div style="font-size: 0.72rem; color: var(--accent-cyan);">LIVE SERVER DRILL</div>
+        </div>
+
+        <div class="terminal-body">
+          <div class="file-tree-pane">
+            <div class="tree-title">DIRECTORY: wp-content/plugins/</div>
+            <ul class="file-items-list" id="plugin-list">
+              <li class="file-row">
+                <span>📁 elementor/</span>
+                <span style="color: var(--text-dim); font-size: 0.72rem;">Verified v3.24</span>
+              </li>
+              <li class="file-row">
+                <span>📁 astra-addon/</span>
+                <span style="color: var(--text-dim); font-size: 0.72rem;">Verified v4.8</span>
+              </li>
+              <li class="file-row">
+                <span>📁 litespeed-cache/</span>
+                <span style="color: var(--text-dim); font-size: 0.72rem;">Verified v6.5</span>
+              </li>
+              <li class="file-row faulty-state" id="faulty-row">
+                <span style="color: var(--accent-crimson); font-weight: 600;">⚠️ experimental-ai-plugin/ (FATAL ERROR)</span>
+                <button class="btn-purge" onclick="executePurge()">PURGE & RECOVER</button>
+              </li>
+            </ul>
+          </div>
+
+          <div class="probe-pane">
+            <div>
+              <div style="font-size: 0.74rem; color: var(--text-dim); margin-bottom: 10px;">FRONTEND LIVE HEALTH PROBE:</div>
+              <div class="probe-screen state-crashed" id="live-probe">
+                <div class="probe-code" id="probe-status">CRITICAL ERROR (500)</div>
+                <div class="probe-message" id="probe-msg">"There has been a critical error on this website." White screen of death detected.</div>
+              </div>
+            </div>
+            <div style="margin-top: 18px; font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono);" id="drill-action-note">
+              👉 Click <strong>[PURGE & RECOVER]</strong> to simulate manual deletion in hPanel and test real-time uptime restoration.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE SECTION 2: AI-ASSISTED CUSTOM CSS ENGINE -->
+    <section class="section-wrap" id="interactive-css">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">[PRACTICAL EXECUTION // AI WORKFLOW]</div>
+          <h2 class="section-title">AI-Assisted Elementor CSS Engine</h2>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan);">
+          ZERO FLUFF · TARGETED SELECTORS
+        </div>
+      </div>
+
+      <p style="color: var(--text-muted); margin-bottom: 22px; font-size: 0.95rem; max-width: 800px;">
+        I don't write complex stylesheets from memory—I prompt Claude/ChatGPT for precise CSS classes and inject them directly into Elementor's <strong>Custom CSS</strong> panel to tweak buttons, hover states, and spacing. Test the live injection below:
+      </p>
+
+      <div class="code-demo-container">
+        <div class="code-pane">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 0.75rem; color: var(--text-dim);">ELEMENTOR ADVANCED TAB &gt; CUSTOM CSS</span>
+            <span style="font-size: 0.7rem; color: var(--accent-green);">LIVE INJECTOR</span>
+          </div>
+
+          <div class="code-snippet-box">
+            <span class="comment">/* Prompt: Generate clean glowing action trigger for real estate */</span><br>
+            <span class="prop">selector .lead-button</span> {<br>
+            &nbsp;&nbsp;<span class="prop">background</span>: <span class="val" id="css-bg">#00f0ff</span>;<br>
+            &nbsp;&nbsp;<span class="prop">border-radius</span>: <span class="val" id="css-radius">8px</span>;<br>
+            &nbsp;&nbsp;<span class="prop">box-shadow</span>: <span class="val" id="css-shadow">0 0 20px rgba(0, 240, 255, 0.4)</span>;<br>
+            &nbsp;&nbsp;<span class="prop">transition</span>: <span class="val">all 0.3s ease</span>;<br>
+            }
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 18px;">
+            <button class="btn-ghost" style="padding: 6px 12px; font-size: 0.76rem;" onclick="setThemeStyle('cyan')">Theme: Cyber Cyan</button>
+            <button class="btn-ghost" style="padding: 6px 12px; font-size: 0.76rem;" onclick="setThemeStyle('green')">Theme: Verified Green</button>
+            <button class="btn-ghost" style="padding: 6px 12px; font-size: 0.76rem;" onclick="setThemeStyle('amber')">Theme: Property Gold</button>
+          </div>
+        </div>
+
+        <div class="preview-pane">
+          <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 16px; font-family: var(--font-mono);">RENDERED ELEMENTOR COMPONENT:</div>
+          <button id="demo-button" style="background: #00f0ff; color: #04070b; border: none; padding: 14px 28px; border-radius: 8px; font-family: var(--font-mono); font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); transition: all 0.3s ease;">
+            Inquire on WhatsApp ➔
+          </button>
+          <span style="font-size: 0.72rem; color: var(--text-dim); margin-top: 14px; font-family: var(--font-mono);">Try switching themes on the left to see instant styling injection</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- MISSIONS: THE 3 REAL ESTATE BUILDS -->
+    <section class="section-wrap" id="missions">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">[VERIFIED CLIENT CAPSTONES]</div>
+          <h2 class="section-title">Missions & Practical Projects</h2>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan);">
+          VERIFIED CAPSTONES @ SKILLUP GRADED
+        </div>
+      </div>
+
+      <div class="missions-grid">
+        <!-- Rathi Properties -->
+        <div class="mission-card">
+          <div>
+            <div class="mission-header">
+              <span class="badge-mission">MISSION 01</span>
+              <span style="color: var(--text-dim);">MAY – JUN 2026</span>
+            </div>
+            <h3 class="mission-title">Rathi Properties</h3>
+            <p class="mission-text">
+              Built a complete property showcase from scratch on a blank canvas. Structured listing cards with specifications, integrated one-tap WhatsApp inquiries, and tested responsive layouts across phones and tablets.
+            </p>
+            <div class="tag-cluster">
+              <span class="tag-chip">WordPress</span>
+              <span class="tag-chip">Elementor Blank Canvas</span>
+              <span class="tag-chip">Astra Theme</span>
+              <span class="tag-chip">WhatsApp Triggers</span>
+            </div>
+          </div>
+          <div class="integrity-seal">
+            🔒 Practical client capstone at SkillUp Graded Institute. Focused on lead-generation UX.
+          </div>
+        </div>
+
+        <!-- Homes N Heights -->
+        <div class="mission-card">
+          <div>
+            <div class="mission-header">
+              <span class="badge-mission">MISSION 02</span>
+              <span style="color: var(--text-dim);">MAR 2026</span>
+            </div>
+            <h3 class="mission-title">Homes N Heights</h3>
+            <p class="mission-text">
+              Organized active property listings into an uncluttered user flow. Designed dedicated property showcase sections, mobile-first navigation menus, and streamlined inquiry contact forms.
+            </p>
+            <div class="tag-cluster">
+              <span class="tag-chip">WordPress</span>
+              <span class="tag-chip">Hello Elementor</span>
+              <span class="tag-chip">Navigation Trees</span>
+              <span class="tag-chip">Lead Forms</span>
+            </div>
+          </div>
+          <div class="integrity-seal">
+            🔒 Built under mentor guidance to simulate modern residential property brokerage layouts.
+          </div>
+        </div>
+
+        <!-- Migrate Homes -->
+        <div class="mission-card">
+          <div>
+            <div class="mission-header">
+              <span class="badge-mission">MISSION 03</span>
+              <span style="color: var(--text-dim);">FEB – MAR 2026</span>
+            </div>
+            <h3 class="mission-title">Migrate Homes</h3>
+            <p class="mission-text">
+              Developed service pages, updated property galleries, and implemented strict on-page semantic SEO headings (H1, H2, H3) and meta descriptions to improve discoverability.
+            </p>
+            <div class="tag-cluster">
+              <span class="tag-chip">WordPress</span>
+              <span class="tag-chip">Semantic H1-H6 SEO</span>
+              <span class="tag-chip">Canva Banners</span>
+              <span class="tag-chip">Layout Accessibility</span>
+            </div>
+          </div>
+          <div class="integrity-seal">
+            🔒 Practical SEO and layout exercise emphasizing clean site hierarchy and visual balance.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE SPEED ARCHITECTURE -->
+    <section class="section-wrap" id="performance">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">[SPEED BENCHMARK]</div>
+          <h2 class="section-title">Live Speed Architecture</h2>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-green);">
+          LITESPEED CACHE + EDGE CDN
+        </div>
+      </div>
+
+      <div class="speed-dashboard">
+        <div>
+          <div class="gauge-wrapper">
+            <span class="gauge-digits">100</span>
+            <span class="gauge-unit">PageSpeed Score</span>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="font-family: var(--font-display); font-size: 1.45rem; margin-bottom: 10px;">
+            Blazing Load Times Across Mobile Viewports
+          </h3>
+          <p style="color: var(--text-muted); font-size: 0.94rem; line-height: 1.7; margin-bottom: 24px;">
+            Slow websites lose conversions. By combining server-side LiteSpeed Cache, deferred JavaScript execution, 
+            and modern WebP image compression, websites remain light and instant on 4G/5G connections.
+          </p>
+
+          <div class="metric-triad">
+            <div class="triad-card">
+              <div class="triad-name">First Contentful Paint</div>
+              <div class="triad-val" style="color: var(--accent-green);">0.4s</div>
+            </div>
+            <div class="triad-card">
+              <div class="triad-name">Largest Contentful Paint</div>
+              <div class="triad-val" style="color: var(--accent-green);">0.8s</div>
+            </div>
+            <div class="triad-card">
+              <div class="triad-name">Total Blocking Time</div>
+              <div class="triad-val" style="color: var(--accent-green);">0ms</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VERIFIED CREDENTIALS -->
+    <section class="section-wrap" id="credentials">
+      <div class="section-header">
+        <div>
+          <div class="section-eyebrow">[VERIFIED CREDENTIALS REGISTRY]</div>
+          <h2 class="section-title">Certified Qualifications</h2>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-dim);">
+          OFFICIAL VERIFICATION IDENTIFIERS
+        </div>
+      </div>
+
+      <div class="credentials-grid">
+        <div class="cred-item">
+          <div>
+            <div class="cred-issuer">Google Digital Garage</div>
+            <div class="cred-name">Fundamentals of Digital Marketing</div>
+          </div>
+          <div class="cred-verified">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="color: var(--accent-green);"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            ID: 449277253
+          </div>
+        </div>
+
+        <div class="cred-item">
+          <div>
+            <div class="cred-issuer">HubSpot Academy</div>
+            <div class="cred-name">Social Media Marketing II Certified</div>
+          </div>
+          <div class="cred-verified">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="color: var(--accent-green);"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            Verified Academy Badge
+          </div>
+        </div>
+
+        <div class="cred-item">
+          <div>
+            <div class="cred-issuer">Canva Design School</div>
+            <div class="cred-name">Canva Essentials & Graphic Design</div>
+          </div>
+          <div class="cred-verified">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="color: var(--accent-green);"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            Certified Visual Creator
+          </div>
+        </div>
+
+        <div class="cred-item">
+          <div>
+            <div class="cred-issuer">Anthropic Academy</div>
+            <div class="cred-name">Claude 101 AI Prompting</div>
+          </div>
+          <div class="cred-verified">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="color: var(--accent-green);"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            Prompt Engineering Foundations
+          </div>
+        </div>
+
+        <div class="cred-item">
+          <div>
+            <div class="cred-issuer">CSJM University, Kanpur</div>
+            <div class="cred-name">Bachelor of Commerce (B.Com)</div>
+          </div>
+          <div class="cred-verified">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="color: var(--accent-green);"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            Terms 1–4 Clear // Currently Pursuing
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRANSMISSION HUB / CONTACT -->
+    <section class="section-wrap" id="transmission">
+      <div class="transmission-hub">
+        <div class="hero-badge-tag" style="justify-content: center;">[COMMUNICATION FREQUENCY]</div>
+        <h2 class="hub-title">Ready for Full-Time & Project Deployments</h2>
+        <p class="hub-desc">
+          Available for an entry-level WordPress Executive, Web Support Specialist, or Site Maintenance Associate role in Gurugram, Delhi NCR, or Remote.
+        </p>
+
+        <div class="hub-links">
+          <a href="https://wa.me/918923162439?text=Hello%20Dev,%20we%20want%20to%20discuss%20a%20WordPress%20support%20role" target="_blank" class="btn-action">
+            WhatsApp Direct (+91 8923162439)
+          </a>
+          <a href="/cdn-cgi/l/email-protection#dabebfacb1bbafa9b2bbb6e2e3e8e99abdb7bbb3b6f4b9b5b7" class="btn-ghost"><span class="__cf_email__" data-cfemail="9cf8f9eaf7fde9eff4fdf0a4a5aeafdcfbf1fdf5f0b2fff3f1">[email&#160;protected]</span></a>
+          <a href="https://linkedin.com/in/dev-kaushal-8215373ab" target="_blank" class="btn-ghost">
+            LinkedIn Profile
+          </a>
+          <a href="https://github.com/devkaushall" target="_blank" class="btn-ghost">
+            GitHub Profile
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>DEV KAUSHAL · WORDPRESS & WEB OPERATIONS SPECIALIST · GURUGRAM, HARYANA (DELHI NCR)</p>
+    <p style="margin-top: 6px; color: var(--text-dim);">AUTHENTIC WORKFLOW CONSOLE · REAL-WORLD INTEGRITY · NO FLUFF ARCHITECTURE</p>
+  </footer>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // Live Telemetry Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('utc-clock').innerText = now.toISOString().replace('T', ' ').substr(11, 8) + ' UTC';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Mouse Follow Ambient Glow
+    const glow = document.getElementById('cursor-glow');
+    window.addEventListener('mousemove', (e) => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
+    });
+
+    // Interactive hPanel Purge Simulator
+    function executePurge() {
+      const row = document.getElementById('faulty-row');
+      const probe = document.getElementById('live-probe');
+      const statusText = document.getElementById('probe-status');
+      const msg = document.getElementById('probe-msg');
+      const note = document.getElementById('drill-action-note');
+
+      row.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(24px)';
+
+      setTimeout(() => {
+        row.remove();
+        probe.classList.remove('state-crashed');
+        probe.classList.add('state-healthy');
+        statusText.innerText = 'HTTP 200 OK — SITE LIVE';
+        statusText.style.color = 'var(--accent-green)';
+        msg.innerText = 'Faulty plugin purged from wp-content/plugins/. PHP stack recovered in 0.8s without touching database.';
+        note.innerHTML = '🎉 <span style="color: var(--accent-green); font-weight: 700;">DRILL PASSED:</span> Site restored instantly via manual hPanel isolation!';
+      }, 300);
+    }
+
+    // Interactive CSS Theme Injector
+    function setThemeStyle(theme) {
+      const btn = document.getElementById('demo-button');
+      const bg = document.getElementById('css-bg');
+      const shadow = document.getElementById('css-shadow');
+
+      if (theme === 'cyan') {
+        btn.style.background = '#00f0ff';
+        btn.style.color = '#04070b';
+        btn.style.boxShadow = '0 0 20px rgba(0, 240, 255, 0.4)';
+        bg.innerText = '#00f0ff';
+        shadow.innerText = '0 0 20px rgba(0, 240, 255, 0.4)';
+      } else if (theme === 'green') {
+        btn.style.background = '#00ff88';
+        btn.style.color = '#04070b';
+        btn.style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.4)';
+        bg.innerText = '#00ff88';
+        shadow.innerText = '0 0 20px rgba(0, 255, 136, 0.4)';
+      } else if (theme === 'amber') {
+        btn.style.background = '#ffb703';
+        btn.style.color = '#04070b';
+        btn.style.boxShadow = '0 0 20px rgba(255, 183, 3, 0.4)';
+        bg.innerText = '#ffb703';
+        shadow.innerText = '0 0 20px rgba(255, 183, 3, 0.4)';
+      }
+    }
+  </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a44b50b0e9d9a6e6',t:'MTc5MTAyMzg4NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
